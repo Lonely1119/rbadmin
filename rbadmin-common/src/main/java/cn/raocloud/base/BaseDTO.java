@@ -3,6 +3,9 @@ package cn.raocloud.base;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.Serializable;
+import java.util.Date;
+
 /**
  * @ClassName: BaseDTO
  * @Description: TODO
@@ -11,11 +14,13 @@ import lombok.Setter;
  */
 @Setter
 @Getter
-public class BaseDTO {
+public class BaseDTO implements Serializable {
+
+    private Long id;
 
     private Boolean delete;
 
-    private long createTime;
+    private Date createTime;
 
-    private long updateTime;
+    private Date updateTime;
 }
