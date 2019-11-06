@@ -9,7 +9,18 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>rbadmin-logging</artifactId>
+    <name>RBAdmin核心模块</name>
+    <artifactId>rbadmin-framework</artifactId>
+    <packaging>pom</packaging>
+    <modules>
+        <module>rbadmin-framework-log</module>
+    </modules>
 
-
+    <dependencies>
+        <dependency>
+            <groupId>cn.raocloud</groupId>
+            <artifactId>rbadmin-common</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+    </dependencies>
 </project>
