@@ -23,7 +23,6 @@ import java.util.Map;
 public class ErrorLogPublisher{
 
     public void publishEvent(Throwable cause){
-
         HttpServletRequest request = WebUtils.getRequest();
         ErrorLog errorLog = new ErrorLog();
         if(ObjectUtils.isNotEmpty(cause)) {

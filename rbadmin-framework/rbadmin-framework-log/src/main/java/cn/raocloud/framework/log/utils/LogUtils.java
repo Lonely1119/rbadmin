@@ -1,7 +1,7 @@
 package cn.raocloud.framework.log.utils;
 
 import cn.raocloud.framework.log.model.AbstractLog;
-import cn.raocloud.utils.SecurityUtils;
+import cn.raocloud.utils.SecureUtils;
 import cn.raocloud.utils.WebUtils;
 
 import javax.servlet.http.HttpServletRequest;
@@ -26,6 +26,6 @@ public class LogUtils {
         log.setUserAgent(request.getHeader(WebUtils.USER_AGENT_HEADER));
         log.setRequestUri(request.getRequestURI());
         log.setParams(WebUtils.getRequestParamString(request));
-        log.setCreateBy(SecurityUtils.getUsername());
+        log.setCreateBy(SecureUtils.getUsername());
     }
 }
