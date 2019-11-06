@@ -1,14 +1,12 @@
 package cn.raocloud.aspect;
 
 import cn.raocloud.annotation.RateLimiter;
-import cn.raocloud.utils.RedisRespository;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -27,9 +25,6 @@ import java.util.Objects;
 @Component
 public class RateLimiterAspect {
     private static Logger logger = LoggerFactory.getLogger(RateLimiterAspect.class);
-
-    @Autowired
-    private RedisRespository redisRespository;
 
     @Around("@annotation(cn.raocloud.annotation.RateLimiter)")
     public Object around(ProceedingJoinPoint joinPoint) throws Throwable {

@@ -2,7 +2,6 @@ package cn.raocloud.utils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.*;
 import org.springframework.stereotype.Repository;
 
@@ -30,31 +29,44 @@ import java.util.concurrent.TimeUnit;
  * @Date: 2019/8/6 17:11
  */
 @Repository
-public class RedisRespository {
+public class RedisUtils {
 
-    private static final Logger logger = LoggerFactory.getLogger(RedisRespository.class);
+    private static final Logger logger = LoggerFactory.getLogger(RedisUtils.class);
 
-    @Autowired
-    private RedisTemplate<String, Object> redisTemplate;
+    private static RedisTemplate<String, Object> redisTemplate;
 
-    public ValueOperations<String, Object> getOpsForValue(){
-        return redisTemplate.opsForValue();
+    public RedisUtils(RedisTemplate<String, Object> redisTemplate){
+        if(RedisUtils.redisTemplate != null) {
+            logger.warn("RedisRepository中的RedisTemplate被覆盖, 原有RedisTemplate为:" + RedisUtils.redisTemplate);
+        }
+        RedisUtils.redisTemplate = redisTemplate;
     }
 
-    public ListOperations<String, Object> getOpsForList(){
-        return redisTemplate.opsForList();
+    public static RedisTemplate<String, Object> getRedisTemplate(){
+        if(redisTemplate == null) {
+            throw new IllegalStateException("redisTemplate属性未注入");
+        }
+        return RedisUtils.redisTemplate;
     }
 
-    public SetOperations<String, Object> getOpsForSet(){
-        return redisTemplate.opsForSet();
+    public static ValueOperations<String, Object> getOpsForValue(){
+        return getRedisTemplate().opsForValue();
     }
 
-    public ZSetOperations<String, Object> getOpsForZSet(){
-        return redisTemplate.opsForZSet();
+    public static ListOperations<String, Object> getOpsForList(){
+        return getRedisTemplate().opsForList();
     }
 
-    public <HK, HV> HashOperations<String, HK, HV> getOpsForHash(){
-        return redisTemplate.opsForHash();
+    public static SetOperations<String, Object> getOpsForSet(){
+        return getRedisTemplate().opsForSet();
+    }
+
+    public static ZSetOperations<String, Object> getOpsForZset(){
+        return getRedisTemplate().opsForZSet();
+    }
+
+    public static <HK, HV> HashOperations<String, HK, HV> getOpsForHash(){
+        return getRedisTemplate().opsForHash();
     }
 
     /**
@@ -62,8 +74,8 @@ public class RedisRespository {
      * @param key 键
      * @return
      */
-    public Boolean del(String key){
-        return redisTemplate.delete(key);
+    public static Boolean del(String key){
+        return getRedisTemplate().delete(key);
     }
 
     /**
@@ -71,8 +83,8 @@ public class RedisRespository {
      * @param keys 键集合
      * @return
      */
-    public Long del(Collection<String> keys){
-        return redisTemplate.delete(keys);
+    public static Long del(Collection<String> keys){
+        return getRedisTemplate().delete(keys);
     }
 
     /**
@@ -80,8 +92,8 @@ public class RedisRespository {
      * @param key 键
      * @return
      */
-    public Boolean exists(String key){
-        return redisTemplate.hasKey(key);
+    public static Boolean exists(String key){
+        return getRedisTemplate().hasKey(key);
     }
 
     /**
@@ -89,8 +101,8 @@ public class RedisRespository {
      * @param key 键
      * @param seconds 过期时间，单位为秒
      */
-    public Boolean expire(String key, long seconds){
-        return redisTemplate.expire(key, seconds, TimeUnit.SECONDS);
+    public static Boolean expire(String key, long seconds){
+        return getRedisTemplate().expire(key, seconds, TimeUnit.SECONDS);
     }
 
     /**
@@ -99,8 +111,8 @@ public class RedisRespository {
      * @param date 过期时间，时间点
      * @return
      */
-    public Boolean expire(String key, Date date){
-        return redisTemplate.expireAt(key, date);
+    public static Boolean expire(String key, Date date){
+        return getRedisTemplate().expireAt(key, date);
     }
 
     /**
@@ -108,8 +120,8 @@ public class RedisRespository {
      * @param key 键
      * @return
      */
-    public Long ttl(String key){
-        return redisTemplate.getExpire(key, TimeUnit.SECONDS);
+    public static Long ttl(String key){
+        return getRedisTemplate().getExpire(key, TimeUnit.SECONDS);
     }
 
     /**
@@ -117,7 +129,7 @@ public class RedisRespository {
      * @param key 键
      * @param value 值
      */
-    public void set(String key, Object value){
+    public static void set(String key, Object value){
         getOpsForValue().set(key, value);
     }
 
@@ -127,7 +139,7 @@ public class RedisRespository {
      * @param value 值
      * @param seconds 过期时间, 单位为秒
      */
-    public void set(String key, Object value, long seconds){
+    public static void set(String key, Object value, long seconds){
         getOpsForValue().set(key, value, seconds, TimeUnit.SECONDS);
     }
 
@@ -137,7 +149,7 @@ public class RedisRespository {
      * @param value 值
      * @return
      */
-    public Boolean setNX(String key, Object value){
+    public static Boolean setNX(String key, Object value){
         return getOpsForValue().setIfAbsent(key, value);
     }
 
@@ -148,7 +160,7 @@ public class RedisRespository {
      * @param seconds 过期时间，单位为秒
      * @return
      */
-    public Boolean setNX(String key, Object value, long seconds){
+    public static Boolean setNX(String key, Object value, long seconds){
         return getOpsForValue().setIfAbsent(key, value, seconds, TimeUnit.SECONDS);
     }
 
@@ -159,14 +171,10 @@ public class RedisRespository {
      * @param <T> 类型
      * @return
      */
-    public <T> T get(String key, Class<T> clazz){
+    public static <T> T get(String key, Class<T> clazz){
         Object value = getOpsForValue().get(key);
-        if(!clazz.isInstance(value)){
-            String msg = String.format("【Get】获取值不是【%s】类型实例，强制转换类型失败", clazz.getName());
-            logger.error(msg);
-            throw new ClassCastException(msg);
-        }
-        return clazz.cast(value);
+        String msg = String.format("【Get】获取值不是【%s】类型实例，强制转换类型失败", clazz.getName());
+        return convert(value, clazz, msg);
     }
 
     /**
@@ -176,19 +184,15 @@ public class RedisRespository {
      * @param <T> 类型
      * @return
      */
-    public <T> List<T> mget(Collection<String> keys, Class<T> clazz){
+    public static <T> List<T> mget(Collection<String> keys, Class<T> clazz){
         List<T> resultList = null;
 
         List<Object> valueList = getOpsForValue().multiGet(keys);
         if(valueList != null){
             resultList = new ArrayList<>();
+            String msg = String.format("【multiGet】获取值不是【%s】类型实例，强制转换类型失败", clazz.getName());
             for(Object value : valueList){
-                if(!clazz.isInstance(value)){
-                    String msg = String.format("【multiGet】获取值不是【%s】类型实例，强制转换类型失败", clazz.getName());
-                    logger.error(msg);
-                    throw new ClassCastException(msg);
-                }
-                T result = clazz.cast(value);
+                T result = convert(value, clazz, msg);
                 resultList.add(result);
             }
         }
@@ -201,7 +205,7 @@ public class RedisRespository {
      * @param value 值
      * @return
      */
-    public Long lpush(String key, Object value){
+    public static Long lpush(String key, Object value){
         return getOpsForList().leftPush(key, value);
     }
 
@@ -212,7 +216,7 @@ public class RedisRespository {
      * @param value 值
      * @return
      */
-    public Long lpush(String key, Object targetValue, Object value){
+    public static Long lpush(String key, Object targetValue, Object value){
         return getOpsForList().leftPush(key, targetValue, value);
     }
 
@@ -222,7 +226,7 @@ public class RedisRespository {
      * @param values 值列表
      * @return
      */
-    public Long lpush(String key, Object... values){
+    public static Long lpush(String key, Object... values){
         return getOpsForList().leftPushAll(key, values);
     }
 
@@ -232,7 +236,7 @@ public class RedisRespository {
      * @param value 值
      * @return
      */
-    public Long lpushx(String key, Object value){
+    public static Long lpushx(String key, Object value){
         return getOpsForList().leftPushIfPresent(key, value);
     }
 
@@ -243,14 +247,10 @@ public class RedisRespository {
      * @param <T> 泛型
      * @return
      */
-    public <T> T lpop(String key, Class<T> clazz){
+    public static <T> T lpop(String key, Class<T> clazz){
         Object value = getOpsForList().leftPop(key);
-        if(!clazz.isInstance(value)){
-            String msg = String.format("【leftPop】获取值不是【%s】类型实例，强制转换类型失败", clazz.getName());
-            logger.error(msg);
-            throw new ClassCastException(msg);
-        }
-        return clazz.cast(value);
+        String msg = String.format("【leftPop】获取值不是【%s】类型实例，强制转换类型失败", clazz.getName());
+        return convert(value, clazz, msg);
     }
 
     /**
@@ -259,7 +259,7 @@ public class RedisRespository {
      * @param value 值
      * @return
      */
-    public Long rpush(String key, String value){
+    public static Long rpush(String key, String value){
         return getOpsForList().rightPush(key, value);
     }
 
@@ -270,7 +270,7 @@ public class RedisRespository {
      * @param value 值
      * @return
      */
-    public Long rpush(String key, String targetValue, String value){
+    public static Long rpush(String key, String targetValue, String value){
         return getOpsForList().rightPush(key, targetValue, value);
     }
 
@@ -280,7 +280,7 @@ public class RedisRespository {
      * @param values 值列表
      * @return
      */
-    public Long rpush(String key, Object... values){
+    public static Long rpush(String key, Object... values){
         return getOpsForList().rightPushAll(key, values);
     }
 
@@ -290,7 +290,7 @@ public class RedisRespository {
      * @param value 值
      * @return
      */
-    public Long rpushx(String key, Object value){
+    public static Long rpushx(String key, Object value){
         return getOpsForList().rightPushIfPresent(key, value);
     }
 
@@ -301,14 +301,10 @@ public class RedisRespository {
      * @param <T> 泛型
      * @return
      */
-    public <T> T rpop(String key, Class<T> clazz){
+    public static <T> T rpop(String key, Class<T> clazz){
         Object value = getOpsForList().rightPop(key);
-        if(!clazz.isInstance(value)){
-            String msg = String.format("【rightPop】获取值不是【%s】类型实例，强制转换类型失败", clazz.getName());
-            logger.error(msg);
-            throw new ClassCastException(msg);
-        }
-        return clazz.cast(value);
+        String msg = String.format("【rightPop】获取值不是【%s】类型实例，强制转换类型失败", clazz.getName());
+        return convert(value, clazz, msg);
     }
 
     /**
@@ -320,19 +316,15 @@ public class RedisRespository {
      * @param <T> 泛型
      * @return
      */
-    public <T> List<T> lrange(String key, long start, long end, Class<T> clazz){
+    public static <T> List<T> lrange(String key, long start, long end, Class<T> clazz){
         List<T> resultList = null;
 
         List<Object> valueList = getOpsForList().range(key, start, end);
         if(valueList != null){
             resultList = new ArrayList<>();
+            String msg = String.format("【range】获取值不是【%s】类型实例，强制转换类型失败", clazz.getName());
             for(Object value : valueList){
-                if(!clazz.isInstance(value)){
-                    String msg = String.format("【range】获取值不是【%s】类型实例，强制转换类型失败", clazz.getName());
-                    logger.error(msg);
-                    throw new ClassCastException(msg);
-                }
-                T result = clazz.cast(value);
+                T result = convert(value, clazz, msg);
                 resultList.add(result);
             }
         }
@@ -346,7 +338,7 @@ public class RedisRespository {
      * @param value 值
      * @return
      */
-    public Long lrem(String key, long count, Object value){
+    public static Long lrem(String key, long count, Object value){
         return getOpsForList().remove(key, count, value);
     }
 
@@ -355,7 +347,7 @@ public class RedisRespository {
      * @param key 键
      * @return
      */
-    public Long llen(String key){
+    public static Long llen(String key){
         return getOpsForList().size(key);
     }
 
@@ -365,7 +357,7 @@ public class RedisRespository {
      * @param field 字段
      * @return
      */
-    public Boolean hexists(String key, Object field){
+    public static Boolean hexists(String key, Object field){
         return getOpsForHash().hasKey(key, field);
     }
 
@@ -375,7 +367,7 @@ public class RedisRespository {
      * @param fields 字段列表
      * @return
      */
-    public Long hdel(String key, Object... fields){
+    public static Long hdel(String key, Object... fields){
         return getOpsForHash().delete(key, fields);
     }
 
@@ -384,7 +376,7 @@ public class RedisRespository {
      * @param key 键
      * @return
      */
-    public Long hlen(String key){
+    public static Long hlen(String key){
         return getOpsForHash().size(key);
     }
 
@@ -396,7 +388,7 @@ public class RedisRespository {
      * @param <HK> field泛型
      * @param <HV> value泛型
      */
-    public <HK, HV> void hset(String key, HK field, HV value){
+    public static <HK, HV> void hset(String key, HK field, HV value){
         HashOperations<String, HK, HV> opsHash = getOpsForHash();
         opsHash.put(key, field, value);
     }
@@ -409,7 +401,7 @@ public class RedisRespository {
      * @param <HK> field泛型
      * @param <HV> value泛型
      */
-    public <HK, HV> Boolean hsetnx(String key, HK field, HV value){
+    public static <HK, HV> Boolean hsetnx(String key, HK field, HV value){
         HashOperations<String, HK, HV> opsHash = getOpsForHash();
         return opsHash.putIfAbsent(key, field, value);
     }
@@ -421,7 +413,7 @@ public class RedisRespository {
      * @param <HK> field泛型
      * @param <HV> value泛型
      */
-    public <HK, HV> void hmset(String key, Map<HK, HV> fieldMap){
+    public static <HK, HV> void hmset(String key, Map<HK, HV> fieldMap){
         HashOperations<String, HK, HV> opsHash = getOpsForHash();
         opsHash.putAll(key, fieldMap);
     }
@@ -434,7 +426,7 @@ public class RedisRespository {
      * @param <HV> value泛型
      * @return
      */
-    public <HK, HV> HV hget(String key, HK field){
+    public static <HK, HV> HV hget(String key, HK field){
         HashOperations<String, HK, HV> opsHash = getOpsForHash();
         return opsHash.get(key, field);
     }
@@ -447,7 +439,7 @@ public class RedisRespository {
      * @param <HV> value泛型
      * @return
      */
-    public <HK, HV> Map<HK, HV> hmget(String key, Collection<HK> fields){
+    public static <HK, HV> Map<HK, HV> hmget(String key, Collection<HK> fields){
         Map<HK, HV> resultMap = new HashMap<>();
         if(fields == null || fields.isEmpty()){
             return resultMap;
@@ -471,7 +463,7 @@ public class RedisRespository {
      * @param <HV> value泛型
      * @return
      */
-    public <HK, HV> Map<HK, HV> hscan(String key, String match, long count){
+    public static <HK, HV> Map<HK, HV> hscan(String key, String match, long count){
         Map<HK, HV> resultMap = new HashMap<>();
 
         try{
@@ -489,5 +481,23 @@ public class RedisRespository {
             logger.error(e.getMessage(), e.getCause());
         }
         return resultMap;
+    }
+
+
+    /**
+     * 类型转换
+     * @param value 获取值
+     * @param clazz 目标类型
+     * @param msg 错误消息
+     * @param <T> 泛型
+     * @return
+     */
+    private static <T> T convert(Object value, Class<T> clazz, String msg){
+        if(value == null) { return null; }
+        if(!clazz.isInstance(value)){
+            logger.error(msg);
+            throw new ClassCastException(msg);
+        }
+        return clazz.cast(value);
     }
 }

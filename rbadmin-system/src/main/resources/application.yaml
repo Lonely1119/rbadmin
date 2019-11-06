@@ -1,0 +1,21 @@
+
+########Redis配置信息##########
+redis:
+  hostname: 49.235.247.53
+  port: 6379
+  password: Rbin19951119
+  database: 0
+  timeout: 2000
+  pool:
+    maxTotal: 500
+    minIdle: 2
+    maxIdle: 10
+    maxWaitMillis: 1000
+    minEvictableIdleTimeMillis: 300000
+    numTestsPerEvictionRun: 5
+    timeBetweenEvictionRunsMillis: 30000
+    testOnBorrow: true
+    testWhileIdle: false
+  pubsub:
+    messageHandler:
+      basePackage: com.raobin.demo.module.redis.handler

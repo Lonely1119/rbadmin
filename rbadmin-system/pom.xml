@@ -11,5 +11,11 @@
 
     <artifactId>rbadmin-system</artifactId>
 
-
+    <dependencies>
+        <dependency>
+            <groupId>cn.raocloud</groupId>
+            <artifactId>rbadmin-common</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+    </dependencies>
 </project>

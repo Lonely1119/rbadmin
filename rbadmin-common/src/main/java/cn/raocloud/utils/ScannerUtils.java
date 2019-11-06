@@ -1,6 +1,5 @@
 package cn.raocloud.utils;
 
-import lombok.experimental.UtilityClass;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
@@ -9,7 +8,6 @@ import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.core.type.classreading.MetadataReader;
 import org.springframework.core.type.classreading.MetadataReaderFactory;
 import org.springframework.core.type.classreading.SimpleMetadataReaderFactory;
-import org.springframework.util.ClassUtils;
 
 import java.io.IOException;
 import java.util.LinkedHashSet;
@@ -21,22 +19,21 @@ import java.util.Set;
  * @Author: raobin
  * @Date: 2019/8/8 13:56
  */
-@UtilityClass
 public class ScannerUtils {
 
-    private final Logger logger = LoggerFactory.getLogger(ScannerUtils.class);
+    private static final Logger logger = LoggerFactory.getLogger(ScannerUtils.class);
 
     /**
      * 指定包下所有class文件，包括子包下的class文件
      */
-    private final String DEFAULT_RESOURCE_PATTERN = "**/*.class";
+    private static final String DEFAULT_RESOURCE_PATTERN = "**/*.class";
 
     /**
      * 扫描指定包下所有class文件
      * @param basePackage 指定包
      * @return
      */
-    public Set<Class<?>> scan(String basePackage){
+    public static Set<Class> scan(String basePackage) throws IOException, ClassNotFoundException {
         return scan(basePackage, null);
     }
 
@@ -46,41 +43,32 @@ public class ScannerUtils {
      * @param annotationClazz 指定注解
      * @return
      */
-    public Set<Class<?>> scan(String basePackage, Class<?> annotationClazz){
-        Set<Class<?>> clazzSet = new LinkedHashSet<>();
-        if(basePackage == null || basePackage.trim().length() == 0){
+    public static Set<Class> scan(String basePackage, Class<?> annotationClazz) throws IOException, ClassNotFoundException {
+        Set<Class> clazzSet = new LinkedHashSet<>();
+        if(StringUtils.isAllEmpty(basePackage, basePackage.trim())){
             return clazzSet;
         }
-
+        // 解析路径中的占位符以及获取绝对路径
+        basePackage = SpringContextHolder.getEnvironment().resolveRequiredPlaceholders(basePackage);
         String packageSearchPath = ResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX
-                + resolveBasePackage(basePackage) + "/" + DEFAULT_RESOURCE_PATTERN;
-        try {
-            ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-            ResourcePatternResolver resourcePatternResolver = new PathMatchingResourcePatternResolver(classLoader);
-            MetadataReaderFactory metadataReaderFactory = new SimpleMetadataReaderFactory(classLoader);
-            Resource[] resources = resourcePatternResolver.getResources(packageSearchPath);
-            for(Resource resource : resources){
-                if(resource.isReadable()){
-                    MetadataReader metadataReader = metadataReaderFactory.getMetadataReader(resource);
-                    if(annotationClazz != null){
-                        String annotationName = annotationClazz.getName();
-                        boolean hasAnnotation = metadataReader.getAnnotationMetadata().hasAnnotation(annotationName);
-                        if(!hasAnnotation){continue;}
-                    }
-                    String className = metadataReader.getClassMetadata().getClassName();
-                    Class<?> clazz = Class.forName(className);
-                    clazzSet.add(clazz);
+                + ClassUtils.convertClassNameToResourcePath(basePackage) + "/" + DEFAULT_RESOURCE_PATTERN;
+        ClassLoader classLoader = ClassUtils.getDefaultClassLoader();
+        ResourcePatternResolver resourcePatternResolver = new PathMatchingResourcePatternResolver(classLoader);
+        MetadataReaderFactory metadataReaderFactory = new SimpleMetadataReaderFactory(classLoader);
+        Resource[] resources = resourcePatternResolver.getResources(packageSearchPath);
+        for(Resource resource : resources){
+            if(resource.isReadable()){
+                MetadataReader metadataReader = metadataReaderFactory.getMetadataReader(resource);
+                if(annotationClazz != null){
+                    String annotationName = annotationClazz.getName();
+                    boolean hasAnnotation = metadataReader.getAnnotationMetadata().hasAnnotation(annotationName);
+                    if(!hasAnnotation){continue;}
                 }
+                String className = metadataReader.getClassMetadata().getClassName();
+                Class clazz = ClassUtils.forName(className, classLoader);
+                clazzSet.add(clazz);
             }
-        } catch (IOException | ClassNotFoundException e){
-            logger.error(e.getMessage(), e.getCause());
         }
-
         return clazzSet;
-    }
-
-    private String resolveBasePackage(String basePackage){
-        String className = SpringUtils.getEnvironment().resolveRequiredPlaceholders(basePackage);
-        return ClassUtils.convertClassNameToResourcePath(className);
     }
 }

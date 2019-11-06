@@ -45,6 +45,10 @@
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
@@ -75,24 +79,22 @@
             <artifactId>commons-lang3</artifactId>
         </dependency>
 
-        <!-- MyBatisPlus -->
+        <!-- MyBatisPlus
         <dependency>
             <groupId>com.baomidou</groupId>
             <artifactId>mybatis-plus-boot-starter</artifactId>
             <version>${mybatisplus-version}</version>
         </dependency>
-        <!--Mysql依赖包-->
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
             <scope>runtime</scope>
         </dependency>
-        <!-- druid数据源驱动 -->
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>druid-spring-boot-starter</artifactId>
             <version>${druid.version}</version>
-        </dependency>
+        </dependency>-->
         <!--监控sql日志-->
         <dependency>
             <groupId>org.bgee.log4jdbc-log4j2</groupId>

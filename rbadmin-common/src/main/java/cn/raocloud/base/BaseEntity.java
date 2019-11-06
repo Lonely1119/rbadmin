@@ -1,8 +1,5 @@
 package cn.raocloud.base;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Getter;
 import lombok.Setter;
@@ -20,17 +17,17 @@ import java.util.Date;
 @Getter
 public class BaseEntity implements Serializable {
 
-    @TableId(type = IdType.AUTO)
+//    @TableId(type = IdType.AUTO)
     private Long id;
 
-    @TableField("is_delete")
+//    @TableField("is_delete")
     private Boolean delete;
 
-    @TableField("create_time")
+//    @TableField("create_time")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date createTime;
 
-    @TableField("update_time")
+//    @TableField("update_time")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date updateTime;
 }

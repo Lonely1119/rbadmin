@@ -28,7 +28,7 @@ public class GlobalExceptionHandlerAdvice {
      */
     @ExceptionHandler(ApiException.class)
     public ApiResult apiException(ApiException exception){
-        logger.error("API 调用异常 errorCode={}, errorItem={}, errorType={}, msg={}", exception.getErrorCode(), exception.getErrorItem(), exception.getErrorType(), exception.getMessage(), exception.getCause());
+        logger.error("API调用异常 errorCode={}, errorItem={}, errorType={}, msg={}", exception.getErrorCode(), exception.getErrorItem(), exception.getErrorType(), exception.getMessage(), exception.getCause());
         return ApiResult.createApiResult(exception.getErrorCode(), exception.getErrorItem(), exception.getErrorType(), exception.getMessage(), null);
     }
 
@@ -63,7 +63,7 @@ public class GlobalExceptionHandlerAdvice {
      */
     @ExceptionHandler(BusinessException.class)
     public AjaxResult businessException(BusinessException exception){
-        logger.error("业务异常 msg={}", exception.getMessage(), exception.getCause());
+        logger.error("业务异常 code={}, msg={}", exception.getErrorCode(), exception.getMessage(), exception.getCause());
         return  AjaxResult.failure(exception.getMessage());
     }
 
