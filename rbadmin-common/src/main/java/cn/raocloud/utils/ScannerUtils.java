@@ -49,7 +49,7 @@ public class ScannerUtils {
             return clazzSet;
         }
         // 解析路径中的占位符以及获取绝对路径
-        basePackage = SpringContextHolder.getEnvironment().resolveRequiredPlaceholders(basePackage);
+        basePackage = SpringUtils.getEnvironment().resolveRequiredPlaceholders(basePackage);
         String packageSearchPath = ResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX
                 + ClassUtils.convertClassNameToResourcePath(basePackage) + "/" + DEFAULT_RESOURCE_PATTERN;
         ClassLoader classLoader = ClassUtils.getDefaultClassLoader();

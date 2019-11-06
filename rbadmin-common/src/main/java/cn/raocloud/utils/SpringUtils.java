@@ -6,6 +6,7 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.ApplicationEvent;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
@@ -16,18 +17,18 @@ import org.springframework.stereotype.Component;
  * @Date: 2019/8/6 13:45
  */
 @Component
-public class SpringContextHolder implements ApplicationContextAware, DisposableBean {
+public class SpringUtils implements ApplicationContextAware, DisposableBean {
 
-    private static final Logger logger = LoggerFactory.getLogger(SpringContextHolder.class);
+    private static final Logger logger = LoggerFactory.getLogger(SpringUtils.class);
 
     private static ApplicationContext applicationContext;
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        if (SpringContextHolder.applicationContext != null) {
-            logger.warn("SpringContextHolder中的ApplicationContext被覆盖, 原有ApplicationContext为:" + SpringContextHolder.applicationContext);
+        if (SpringUtils.applicationContext != null) {
+            logger.warn("SpringContextHolder中的ApplicationContext被覆盖, 原有ApplicationContext为:" + SpringUtils.applicationContext);
         }
-        SpringContextHolder.applicationContext = applicationContext;
+        SpringUtils.applicationContext = applicationContext;
     }
 
     @Override
@@ -58,5 +59,9 @@ public class SpringContextHolder implements ApplicationContextAware, DisposableB
 
     public static <T> T getBean(String name, Class<T> clazz){
         return getApplicationContext().getBean(name, clazz);
+    }
+
+    public static void publishEvent(ApplicationEvent event){
+        getApplicationContext().publishEvent(event);
     }
 }

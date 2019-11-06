@@ -9,6 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
+    <name>RBAdmin公共模块</name>
     <artifactId>rbadmin-common</artifactId>
 
 
