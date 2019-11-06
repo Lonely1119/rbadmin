@@ -18,9 +18,9 @@
     <packaging>pom</packaging>
     <modules>
         <module>rbadmin-common</module>
-        <module>rbadmin-logging</module>
         <module>rbadmin-system</module>
         <module>rbadmin-generator</module>
+        <module>rbadmin-framework</module>
     </modules>
 
     <properties>
@@ -79,7 +79,7 @@
             <artifactId>commons-lang3</artifactId>
         </dependency>
 
-        <!-- MyBatisPlus
+        <!-- MyBatisPlus -->
         <dependency>
             <groupId>com.baomidou</groupId>
             <artifactId>mybatis-plus-boot-starter</artifactId>
@@ -94,7 +94,7 @@
             <groupId>com.alibaba</groupId>
             <artifactId>druid-spring-boot-starter</artifactId>
             <version>${druid.version}</version>
-        </dependency>-->
+        </dependency>
         <!--监控sql日志-->
         <dependency>
             <groupId>org.bgee.log4jdbc-log4j2</groupId>
