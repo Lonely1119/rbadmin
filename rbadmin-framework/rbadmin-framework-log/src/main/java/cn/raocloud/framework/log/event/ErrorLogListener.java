@@ -2,6 +2,7 @@ package cn.raocloud.framework.log.event;
 
 import cn.raocloud.framework.log.constant.EventConstant;
 import cn.raocloud.framework.log.model.ErrorLog;
+import cn.raocloud.framework.log.utils.LogUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.annotation.Order;
@@ -25,5 +26,6 @@ public class ErrorLogListener {
     public void saveErrorLog(ErrorLogEvent event){
         Map<String, Object> source = (Map<String, Object>) event.getSource();
         ErrorLog errorLog = (ErrorLog) source.get(EventConstant.EVENT_LOG);
+        LogUtils.addOtherInfoToLog(errorLog);
     }
 }

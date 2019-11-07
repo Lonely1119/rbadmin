@@ -53,6 +53,12 @@ public class AbstractLog implements Serializable {
     protected String method;
 
     /**
+     * 提交的数据
+     */
+    @TableField("params")
+    protected String params;
+
+    /**
      * 方法所属类
      */
     @TableField("method_class")
@@ -63,18 +69,6 @@ public class AbstractLog implements Serializable {
      */
     @TableField("method_name")
     protected String methodName;
-
-    /**
-     * 提交的数据
-     */
-    @TableField("params")
-    protected String params;
-
-    /**
-     * 执行消耗时间
-     */
-    @TableField("spend_time")
-    protected Long spendTime;
 
     /**
      * 创建人

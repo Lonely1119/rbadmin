@@ -5,6 +5,7 @@ import cn.raocloud.utils.SecureUtils;
 import cn.raocloud.utils.WebUtils;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Date;
 
 /**
  * @ClassName: LogUtils
@@ -27,5 +28,12 @@ public class LogUtils {
         log.setRequestUri(request.getRequestURI());
         log.setParams(WebUtils.getRequestParamString(request));
         log.setCreateBy(SecureUtils.getUsername());
+    }
+
+    public static void addOtherInfoToLog(AbstractLog log){
+        log.setCreateTime(new Date());
+        if(log.getParams() == null){
+            log.setParams("");
+        }
     }
 }

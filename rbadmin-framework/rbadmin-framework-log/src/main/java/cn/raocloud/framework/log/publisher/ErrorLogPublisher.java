@@ -22,10 +22,9 @@ import java.util.Map;
  */
 public class ErrorLogPublisher{
 
-    public void publishEvent(Throwable cause){
-        HttpServletRequest request = WebUtils.getRequest();
+    public static void publishEvent(Throwable cause){
         ErrorLog errorLog = new ErrorLog();
-        if(ObjectUtils.isNotEmpty(cause)) {
+        if(ObjectUtils.isNotNull(cause)) {
             errorLog.setStackTrace(ExceptionUtils.getStackTraceAsString(cause));
             errorLog.setExceptionName(cause.getClass().getName());
             errorLog.setMessage(cause.getMessage());
@@ -38,10 +37,10 @@ public class ErrorLogPublisher{
                 errorLog.setLineNumber(element.getLineNumber());
             }
         }
+        HttpServletRequest request = WebUtils.getRequest();
         LogUtils.addRequestInfoToLog(request, errorLog);
         Map<String, Object> event = new HashMap<>(4);
         event.put(EventConstant.EVENT_LOG, errorLog);
-        event.put(EventConstant.EVENT_REQUEST, request);
         SpringUtils.publishEvent(new ErrorLogEvent(event));
     }
 }

@@ -1,5 +1,18 @@
 package cn.raocloud.framework.log.publisher;
 
+import cn.raocloud.framework.log.annotation.ApiLog;
+import cn.raocloud.framework.log.constant.EventConstant;
+import cn.raocloud.framework.log.event.ApiLogEvent;
+import cn.raocloud.framework.log.utils.LogUtils;
+import cn.raocloud.utils.ObjectUtils;
+import cn.raocloud.utils.SpringUtils;
+import cn.raocloud.utils.WebUtils;
+
+import javax.servlet.http.HttpServletRequest;
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * @ClassName: ApiLogPublisher
  * @Description: TODO
@@ -9,7 +22,21 @@ package cn.raocloud.framework.log.publisher;
  */
 public class ApiLogPublisher {
 
-    public static void publishEvent(){
-        
+    public static void publishEvent(Method targetMethod, long spendTime){
+        cn.raocloud.framework.log.model.ApiLog apiLog = new cn.raocloud.framework.log.model.ApiLog();
+        if(ObjectUtils.isNotNull(targetMethod) && targetMethod.isAnnotationPresent(ApiLog.class)){
+            apiLog.setMethodClass(targetMethod.getDeclaringClass().getName());
+            apiLog.setMethodName(targetMethod.getName());
+            apiLog.setSpendTime(spendTime);
+            ApiLog annotation = targetMethod.getAnnotation(ApiLog.class);
+            apiLog.setType(annotation.type().getType());
+            apiLog.setTitle(annotation.value());
+        }
+        HttpServletRequest request = WebUtils.getRequest();
+        LogUtils.addRequestInfoToLog(request, apiLog);
+        Map<String, Object> event = new HashMap<>(4);
+        event.put(EventConstant.EVENT_LOG, apiLog);
+        SpringUtils.publishEvent(new ApiLogEvent(event));
     }
+
 }
