@@ -1,6 +1,5 @@
 package cn.raocloud.framework.log.model;
 
-import cn.raocloud.utils.DateUtils;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
