@@ -1,6 +1,6 @@
 package cn.raocloud.framework.redis.config;
 
-import cn.raocloud.framework.redis.annotation.MessageHandle;
+import cn.raocloud.framework.redis.annotation.Subscriber;
 import cn.raocloud.framework.redis.constant.RedisConstant;
 import cn.raocloud.framework.redis.utils.RedisUtils;
 import cn.raocloud.framework.tool.utils.ClassUtils;
@@ -9,9 +9,7 @@ import cn.raocloud.framework.tool.utils.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cache.annotation.CachingConfigurerSupport;
@@ -78,12 +76,6 @@ public class RedisConfiguration extends CachingConfigurerSupport {
                 .commandTimeout(Duration.ofMillis(redisProperties.getTimeout())).poolConfig(getPoolConfig(redisProperties.getPool())).build();
         return new LettuceConnectionFactory(baseConfig, clientConfig);
     }
-
-    /**
-     * Redis连接基本配置
-     * @param redisProperties
-     * @return
-     */
     private RedisStandaloneConfiguration getBaseConfig(RedisProperties redisProperties){
         RedisStandaloneConfiguration baseConfig = new RedisStandaloneConfiguration();
         baseConfig.setHostName(redisProperties.getHostname());
@@ -92,12 +84,6 @@ public class RedisConfiguration extends CachingConfigurerSupport {
         baseConfig.setDatabase(redisProperties.getDatabase());
         return baseConfig;
     }
-
-    /**
-     * Redis连接池配置
-     * @param pool
-     * @return
-     */
     private GenericObjectPoolConfig getPoolConfig(RedisProperties.Pool pool){
         GenericObjectPoolConfig poolConfig = new GenericObjectPoolConfig();
         poolConfig.setMaxTotal(pool.getMaxTotal());
@@ -118,28 +104,29 @@ public class RedisConfiguration extends CachingConfigurerSupport {
         RedisMessageListenerContainer container = new RedisMessageListenerContainer();
         container.setConnectionFactory(redisConnectionFactory);
         RedisProperties.Pubsub pubsub = redisProperties.getPubsub();
-        RedisProperties.MessageHandler messageHandler = pubsub != null ? pubsub.getMessageHandler() : null;
-        setMessageHandler(container, messageHandler);
+        // 扫描并设置订阅者
+        RedisProperties.Subscriber subscriber = pubsub != null ? pubsub.getSubscriber() : null;
+        setSubscriber(container, subscriber);
         return container;
     }
 
     /**
-     * 设置消息处理器
-     * @param container
-     * @param messageHandler
+     * 设置订阅者-消息处理器
+     * @param container 消息监听器容器
+     * @param subscriber 订阅者配置对象
      * @throws Exception
      */
-    private void setMessageHandler(RedisMessageListenerContainer container, RedisProperties.MessageHandler messageHandler) throws Exception {
+    private void setSubscriber(final RedisMessageListenerContainer container, final RedisProperties.Subscriber subscriber) throws Exception {
         try {
-            if(messageHandler != null) {
-                Set<Class> clazzSet = scanMessageHandler(messageHandler);
+            if(subscriber != null) {
+                Set<Class> clazzSet = scanMessageHandler(subscriber);
                 for(Class clazz : clazzSet){
-                    MessageHandle annotation = ClassUtils.getAnnotation(clazz, MessageHandle.class);
+                    Subscriber annotation = ClassUtils.getAnnotation(clazz, Subscriber.class);
                     String topicName = annotation.topic();
-                    String methodName = StringUtils.isBlank(annotation.method()) ? RedisConstant.DEFAULT_MESSAGE_HANDLER_METHOD : annotation.method();
+                    String methodName = StringUtils.isBlank(annotation.method()) ? RedisConstant.DEFAULT_SUBSCRIBER_HANDLE_METHOD : annotation.method();
                     Class<? extends RedisSerializer> serializerClazz = annotation.serializer();
                     // 校验消息处理方法是否合法，不合法将抛出异常
-                    validateMethod(clazz, methodName);
+//                    validateMethod(clazz, methodName);
                     // 生成消息处理器实例和消息序列化器
                     Object handler = clazz.newInstance();
                     RedisSerializer serializer = serializerClazz.newInstance();
@@ -162,26 +149,25 @@ public class RedisConfiguration extends CachingConfigurerSupport {
 
     /**
      * 扫描指定包下或者指定消息处理器
-     * @param messageHandler
+     * @param subscriber
      * @return
      * @throws IOException
      * @throws ClassNotFoundException
      */
-    private Set<Class> scanMessageHandler(RedisProperties.MessageHandler messageHandler) throws IOException, ClassNotFoundException {
+    private Set<Class> scanMessageHandler(final RedisProperties.Subscriber subscriber) throws IOException, ClassNotFoundException {
         Set<Class> clazzSet = new LinkedHashSet<>();
-        if(StringUtils.isNotBlank(messageHandler.getBasePackage())) {
-            Set<Class> scanClazzSet = ScannerUtils.scan(messageHandler.getBasePackage(), MessageHandle.class);
+        if(StringUtils.isNotBlank(subscriber.getBasePackage())) {
+            Set<Class> scanClazzSet = ScannerUtils.scan(subscriber.getBasePackage());
             clazzSet.addAll(scanClazzSet);
         }
 
-        if(StringUtils.isNotBlank(messageHandler.getClasses())) {
+        final String classSeparator = ",";
+        if(StringUtils.isNotBlank(subscriber.getClasses())) {
             ClassLoader classLoader = ClassUtils.getDefaultClassLoader();
-            String[] classArray = StringUtils.split(messageHandler.getClasses(), ",");
+            String[] classArray = StringUtils.split(subscriber.getClasses(), classSeparator);
             for(String cls : classArray){
                 Class clz = ClassUtils.forName(cls, classLoader);
-                if(ClassUtils.hasAnnotation(clz, MessageHandle.class)){
-                    clazzSet.add(clz);
-                }
+                clazzSet.add(clz);
             }
         }
 
@@ -197,12 +183,13 @@ public class RedisConfiguration extends CachingConfigurerSupport {
      * @return
      */
     private void validateMethod(Class clazz, String methodName){
-        log.info("Redis订阅与发布的消息处理器的消息处理方法满足要求: \n" +
+        log.info("\nRedis订阅与发布的消息处理器的消息处理方法满足要求: \n" +
                 "1、处理方法不能重载; \n" +
                 "2、处理方法只接收一个String类型的参数; \n" +
                 "3、处理方法名默认为handleMessage; \n" +
                 "4、消息处理器可以继承MessageHandler接口");
-        if(ClassUtils.getMethodCountForName(clazz, methodName) != 1){
+        int methodCount = ClassUtils.getMethodCountForName(clazz, methodName);
+        if(methodCount != 1){
             String msg = String.format("消息处理器的消息处理方法不存在或者为重载方法: {类名: %s, 方法名: %s}", clazz.getName(), methodName);
             throw new IllegalStateException(msg);
         }

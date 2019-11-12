@@ -10,8 +10,7 @@ package cn.raocloud.framework.redis.constant;
 public class RedisConstant {
 
     /**
-     * Redis发布订阅，消息处理器默认处理方法名
-     *     消息处理器处理方法只接受一个String类型参数
+     * Redis发布订阅，订阅者消息默认处理方法
      */
-    public static final String DEFAULT_MESSAGE_HANDLER_METHOD = "handleMessage";
+    public static final String DEFAULT_SUBSCRIBER_HANDLE_METHOD = "handleMessage";
 }

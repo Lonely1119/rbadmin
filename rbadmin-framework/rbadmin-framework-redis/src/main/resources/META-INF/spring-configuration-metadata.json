@@ -1,0 +1,52 @@
+{
+  "groups":[
+    {
+      "name": "redis.pool",
+      "type": "",
+      "sourceType": "",
+      "description": ""
+    }
+  ],
+  "properties": [
+    {
+      "name": "redis.pool.maxTotal",
+      "type": "java.lang.String",
+      "description": "Description for redis.pool.numTestsPerEvictionRun."
+    },
+    {
+      "name": "redis.pool.minIdle",
+      "type": "java.lang.String",
+      "description": "Description for redis.pool.numTestsPerEvictionRun."
+    },
+    {
+      "name": "redis.pool.maxIdle",
+      "type": "java.lang.String",
+      "description": "Description for redis.pool.numTestsPerEvictionRun."
+    },
+    {
+      "name": "redis.pool.maxWaitMillis",
+      "type": "java.lang.String",
+      "description": "Description for redis.pool.numTestsPerEvictionRun."
+    },
+    {
+      "name": "redis.pool.numTestsPerEvictionRun",
+      "type": "java.lang.String",
+      "description": "Description for redis.pool.numTestsPerEvictionRun."
+    },
+    {
+      "name": "redis.pool.timeBetweenEvictionRunsMillis",
+      "type": "java.lang.String",
+      "description": "Description for redis.pool.numTestsPerEvictionRun."
+    },
+    {
+      "name": "redis.pool.testOnBorrow",
+      "type": "java.lang.String",
+      "description": "Description for redis.pool.numTestsPerEvictionRun."
+    },
+    {
+      "name": "redis.pool.testWhileIdle",
+      "type": "java.lang.String",
+      "description": "Description for redis.pool.numTestsPerEvictionRun."
+    }
+  ]
+}

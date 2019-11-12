@@ -54,17 +54,17 @@ public class RedisProperties {
      */
     @Data
     static class Pubsub{
-        private MessageHandler messageHandler;
+        private Subscriber subscriber;
     }
 
     /**
-     * 发布订阅消息处理器所在的包
+     * 订阅者
      */
     @Data
-    static class MessageHandler {
-        // @MessageHandler注解标识的类所在包
+    static class Subscriber {
+        // @Subscribe注解标识的类所在包
         private String basePackage;
-        // 指定@MessageHandler注解标识的类的全限定路径名，多个用英文逗号隔开
+        // 指定@Subscribe注解标识的类的全限定路径名，多个用英文逗号隔开
         private String classes;
     }
 
