@@ -119,15 +119,15 @@ public class RedisConfiguration extends CachingConfigurerSupport {
     private void setSubscriber(final RedisMessageListenerContainer container, final RedisProperties.Subscriber subscriber) throws Exception {
         try {
             if(subscriber != null) {
-                Set<Class> clazzSet = scanMessageHandler(subscriber);
+                Set<Class> clazzSet = scanSubscriber(subscriber);
                 for(Class clazz : clazzSet){
                     Subscriber annotation = ClassUtils.getAnnotation(clazz, Subscriber.class);
                     String topicName = annotation.topic();
                     String methodName = StringUtils.isBlank(annotation.method()) ? RedisConstant.DEFAULT_SUBSCRIBER_HANDLE_METHOD : annotation.method();
                     Class<? extends RedisSerializer> serializerClazz = annotation.serializer();
                     // 校验消息处理方法是否合法，不合法将抛出异常
-//                    validateMethod(clazz, methodName);
-                    // 生成消息处理器实例和消息序列化器
+                    validateMethod(clazz, methodName);
+                    // 生成订阅者和消息序列化器实例
                     Object handler = clazz.newInstance();
                     RedisSerializer serializer = serializerClazz.newInstance();
 
@@ -142,7 +142,7 @@ public class RedisConfiguration extends CachingConfigurerSupport {
                 }
             }
         } catch (Exception e) {
-            log.error("Redis配置-注册消息监听器失败msg: {}", e.getMessage(), e.getCause());
+            log.error("Redis配置-注册订阅者失败msg: {}", e.getMessage(), e.getCause());
             throw e;
         }
     }
@@ -154,10 +154,10 @@ public class RedisConfiguration extends CachingConfigurerSupport {
      * @throws IOException
      * @throws ClassNotFoundException
      */
-    private Set<Class> scanMessageHandler(final RedisProperties.Subscriber subscriber) throws IOException, ClassNotFoundException {
+    private Set<Class> scanSubscriber(final RedisProperties.Subscriber subscriber) throws IOException, ClassNotFoundException {
         Set<Class> clazzSet = new LinkedHashSet<>();
         if(StringUtils.isNotBlank(subscriber.getBasePackage())) {
-            Set<Class> scanClazzSet = ScannerUtils.scan(subscriber.getBasePackage());
+            Set<Class> scanClazzSet = ScannerUtils.scan(subscriber.getBasePackage(), Subscriber.class);
             clazzSet.addAll(scanClazzSet);
         }
 
@@ -167,7 +167,9 @@ public class RedisConfiguration extends CachingConfigurerSupport {
             String[] classArray = StringUtils.split(subscriber.getClasses(), classSeparator);
             for(String cls : classArray){
                 Class clz = ClassUtils.forName(cls, classLoader);
-                clazzSet.add(clz);
+                if(ClassUtils.hasAnnotation(clz, Subscriber.class)){
+                    clazzSet.add(clz);
+                }
             }
         }
 
@@ -175,7 +177,7 @@ public class RedisConfiguration extends CachingConfigurerSupport {
     }
 
     /**
-     * 校验消息处理器的消息处理方法
+     * 校验订阅者的消息处理方法
      *  1、处理方法不能重载
      *  2、处理方法接收一个String类型的参数
      * @param clazz 消息处理器
@@ -183,18 +185,17 @@ public class RedisConfiguration extends CachingConfigurerSupport {
      * @return
      */
     private void validateMethod(Class clazz, String methodName){
-        log.info("\nRedis订阅与发布的消息处理器的消息处理方法满足要求: \n" +
+        log.info("\nRedis订阅者的消息处理方法满足要求: \n" +
                 "1、处理方法不能重载; \n" +
                 "2、处理方法只接收一个String类型的参数; \n" +
-                "3、处理方法名默认为handleMessage; \n" +
-                "4、消息处理器可以继承MessageHandler接口");
+                "3、处理方法名默认为handleMessage; ");
         int methodCount = ClassUtils.getMethodCountForName(clazz, methodName);
         if(methodCount != 1){
-            String msg = String.format("消息处理器的消息处理方法不存在或者为重载方法: {类名: %s, 方法名: %s}", clazz.getName(), methodName);
+            String msg = String.format("订阅者的消息处理方法不存在或者为重载方法: {类名: %s, 方法名: %s}", clazz.getName(), methodName);
             throw new IllegalStateException(msg);
         }
         if(!ClassUtils.hasMethod(clazz, methodName, String.class)){
-            String msg = String.format("消息处理器的消息处理方法只接受一个String类型的参数: {类名: %s, 方法名: %s}", clazz.getName(), methodName);
+            String msg = String.format("订阅者的消息处理方法只接受一个String类型的参数: {类名: %s, 方法名: %s}", clazz.getName(), methodName);
             throw new IllegalStateException(msg);
         }
     }
