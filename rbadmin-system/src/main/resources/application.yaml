@@ -27,5 +27,5 @@ redis:
     testOnBorrow: true
     testWhileIdle: false
   pubsub:
-    messageHandler:
-      basePackage: com.raobin.demo.module.redis.handler
+    subscriber:
+      classes: cn.raocloud.DefaultSubscriber

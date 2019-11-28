@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.util.Map;
 
 /**
  * @ClassName: Result
@@ -26,6 +27,8 @@ public class Result<T> implements Serializable {
     private String message;
     @ApiModelProperty(value = "返回数据", required = true)
     private T data;
+    @ApiModelProperty(value = "额外数据", required = false)
+    private Map<String, Object> extraData;
 
     public Result(IResultStatus resultStatus){
         this(resultStatus, null);
@@ -86,7 +89,7 @@ public class Result<T> implements Serializable {
         return new Result<>(code, message, null);
     }
 
-    public static <T> Result<T> status(boolean flag){
-        return flag ? success() : failure();
+    public static <T> Result<T> status(int rows){
+        return rows > 0 ? success() : failure();
     }
 }

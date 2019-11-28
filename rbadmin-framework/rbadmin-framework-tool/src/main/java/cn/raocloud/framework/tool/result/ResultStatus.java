@@ -11,9 +11,9 @@ public enum ResultStatus implements IResultStatus{
     /**
      * 常见错误响应码
      */
-    SUCCESS(ResultCode.SUCCESS, "操作成功"),
+    SUCCESS(ResultCode.SUCCESS, "请求成功"),
 
-    FAILURE(ResultCode.FAILURE, "业务异常"),
+    FAILURE(ResultCode.FAILURE, "请求失败"),
 
     UN_AUTHORIZED(ResultCode.UNAUTHORIZED, "请求未授权"),
 

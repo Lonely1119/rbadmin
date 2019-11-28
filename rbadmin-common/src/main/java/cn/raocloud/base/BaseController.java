@@ -1,5 +1,6 @@
 package cn.raocloud.base;
 
+import cn.raocloud.framework.tool.result.Result;
 import cn.raocloud.framework.tool.utils.DateUtils;
 import cn.raocloud.framework.tool.utils.SqlUtils;
 import cn.raocloud.page.PageDomain;
@@ -29,9 +30,12 @@ public class BaseController {
      */
     @InitBinder
     public void initBinder(WebDataBinder binder){
+        // 当往Model中Set值的时候，如果属性是对象，Spring就会去找对应的editor进行类型转换
         binder.registerCustomEditor(Date.class, new PropertyEditorSupport(){
             @Override
             public void setAsText(String text){
+                // 支持一下时间格式等常用的时间格式
+                // yyyyMMddHHmmss、yyyyMMdd、yyyy-MM-dd HH:mm:ss、yyyy-MM-dd、yyyy-MM-dd HH:mm
                 setValue(DateUtils.parse(text));
             }
         });
