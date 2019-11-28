@@ -12,5 +12,11 @@
     <name>RBAdmin公共模块</name>
     <artifactId>rbadmin-common</artifactId>
 
-
+    <dependencies>
+        <dependency>
+            <groupId>cn.raocloud</groupId>
+            <artifactId>rbadmin-framework-tool</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+    </dependencies>
 </project>

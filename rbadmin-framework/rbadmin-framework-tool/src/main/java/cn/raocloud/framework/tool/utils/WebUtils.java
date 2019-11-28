@@ -137,4 +137,12 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
         }
         return paramString;
     }
+
+    /**
+     * 根据参数名称获取参数值
+     * @return
+     */
+    public static String getRequestParameter(String paramName){
+        return Objects.requireNonNull(getRequest()).getParameter(paramName);
+    }
 }
