@@ -10,6 +10,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -144,5 +145,49 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
      */
     public static String getRequestParameter(String paramName){
         return Objects.requireNonNull(getRequest()).getParameter(paramName);
+    }
+
+    /**
+     * 将字符串渲染到客户端
+     * @param response
+     * @param jsonString
+     */
+    public static void renderString(HttpServletResponse response, String jsonString){
+        try{
+            response.setStatus(200);
+            response.setContentType("application/json");
+            response.setCharacterEncoding("utf-8");
+            response.getWriter().print(jsonString);
+        } catch (IOException e){
+            log.error(e.getMessage(), e.getCause());
+        }
+    }
+
+    /**
+     * 是否是Ajax异步请求
+     *
+     * @param request
+     */
+    public static boolean isAjaxRequest(HttpServletRequest request) {
+        String accept = request.getHeader("accept");
+        if (accept != null && accept.contains("application/json")) {
+            return true;
+        }
+
+        String xRequestedWith = request.getHeader("X-Requested-With");
+        if (xRequestedWith != null && xRequestedWith.contains("XMLHttpRequest")) {
+            return true;
+        }
+
+        String uri = request.getRequestURI();
+        if (StringUtils.containsAnyIgnoreCase(uri, ".json", ".xml")) {
+            return true;
+        }
+
+        String ajax = request.getParameter("__ajax");
+        if (StringUtils.containsAnyIgnoreCase(ajax, "json", "xml")) {
+            return true;
+        }
+        return false;
     }
 }

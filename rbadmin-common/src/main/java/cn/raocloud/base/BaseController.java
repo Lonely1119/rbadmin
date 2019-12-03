@@ -1,6 +1,5 @@
 package cn.raocloud.base;
 
-import cn.raocloud.framework.tool.result.Result;
 import cn.raocloud.framework.tool.utils.DateUtils;
 import cn.raocloud.framework.tool.utils.SqlUtils;
 import cn.raocloud.page.PageDomain;

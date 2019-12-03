@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -27,7 +28,7 @@ public class Result<T> implements Serializable {
     private String message;
     @ApiModelProperty(value = "返回数据", required = true)
     private T data;
-    @ApiModelProperty(value = "额外数据", required = false)
+    @ApiModelProperty(value = "额外数据")
     private Map<String, Object> extraData;
 
     public Result(IResultStatus resultStatus){
@@ -61,6 +62,10 @@ public class Result<T> implements Serializable {
         return new Result<>(ResultStatus.SUCCESS);
     }
 
+    public static <T> Result<T> success(String message) {
+        return success(ResultStatus.SUCCESS, message);
+    }
+
     public static <T> Result<T> success(IResultStatus resultStatus){
         return new Result<>(resultStatus);
     }
@@ -77,6 +82,10 @@ public class Result<T> implements Serializable {
         return new Result<>(ResultStatus.FAILURE);
     }
 
+    public static <T> Result<T> failure(String message) {
+        return failure(ResultStatus.FAILURE, message);
+    }
+
     public static <T> Result<T> failure(IResultStatus resultStatus){
         return new Result<>(resultStatus);
     }
@@ -91,5 +100,19 @@ public class Result<T> implements Serializable {
 
     public static <T> Result<T> status(int rows){
         return rows > 0 ? success() : failure();
+    }
+
+    /**
+     * 添加额外数据
+     * @param key 额外数据键值
+     * @param extraData 额外数据
+     * @return
+     */
+    public Result extra(String key, Object extraData){
+        if(this.extraData == null){
+            this.extraData = new HashMap<>(16);
+        }
+        this.extraData.put(key, extraData);
+        return this;
     }
 }

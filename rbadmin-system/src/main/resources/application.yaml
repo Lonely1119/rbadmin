@@ -26,6 +26,3 @@ redis:
     timeBetweenEvictionRunsMillis: 30000
     testOnBorrow: true
     testWhileIdle: false
-  pubsub:
-    subscriber:
-      classes: cn.raocloud.DefaultSubscriber
