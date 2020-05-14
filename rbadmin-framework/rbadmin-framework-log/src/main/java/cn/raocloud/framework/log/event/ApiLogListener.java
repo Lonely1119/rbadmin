@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.annotation.Order;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Component;
 
 import java.util.Map;
 
@@ -18,6 +19,7 @@ import java.util.Map;
  * @Version 1.0
  */
 @Slf4j
+@Component
 public class ApiLogListener {
 
     @Async
